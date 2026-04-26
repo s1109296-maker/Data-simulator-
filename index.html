@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Advanced Data Structure Simulator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>🚀 Data Structure Simulator</h1>
+
+<div class="tabs">
+  <button onclick="show('array')">Array</button>
+  <button onclick="show('stack')">Stack</button>
+  <button onclick="show('queue')">Queue</button>
+  <button onclick="show('tree')">Tree</button>
+  <button onclick="show('graph')">Graph</button>
+</div>
+
+<div class="panel">
+
+  <input type="number" id="value" placeholder="Enter value">
+  <input type="number" id="value2" placeholder="Second value (for graph)">
+
+  <div class="buttons">
+    <button onclick="insert()">Insert</button>
+    <button onclick="remove()">Remove</button>
+  </div>
+
+  <div id="output"></div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
