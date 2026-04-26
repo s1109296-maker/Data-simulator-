@@ -1,77 +1,51 @@
-let current = "array";
+let mode = "array";
 
-let array = [];
+let array = JSON.parse(localStorage.getItem("array")) || [];
 let stack = [];
 let queue = [];
-
-// TREE
-class Node {
-  constructor(val) {
-    this.val = val;
-    this.left = null;
-    this.right = null;
-  }
-}
+let graph = {};
 let root = null;
 
-// GRAPH
-let graph = {};
+/* MODE */
+document.getElementById("mode").onchange = (e) => {
+  mode = e.target.value;
+  render();
+};
 
-// SWITCH TAB
-function show(type) {
-  current = type;
-  display();
-}
-
-// INSERT
+/* INSERT */
 function insert() {
-  let val = document.getElementById("value").value;
-  let val2 = document.getElementById("value2").value;
+  let v1 = v1Input();
+  let v2 = v2Input();
 
-  if (val === "") return alert("Enter value");
+  if (!v1) return alert("Enter value");
 
-  if (current === "array") array.push(val);
-
-  else if (current === "stack") stack.push(val);
-
-  else if (current === "queue") queue.push(val);
-
-  else if (current === "tree") {
-    root = insertTree(root, val);
+  if (mode === "array") {
+    array.push(v1);
+    save();
   }
 
-  else if (current === "graph") {
-    if (!val2) return alert("Enter second node");
-    addEdge(val, val2);
+  if (mode === "stack") stack.push(v1);
+  if (mode === "queue") queue.push(v1);
+
+  if (mode === "graph") {
+    if (!v2) return alert("Enter second value");
+    addEdge(v1, v2);
   }
 
-  display();
+  render();
 }
 
-// REMOVE
+/* REMOVE */
 function remove() {
-  if (current === "array") array.pop();
+  if (mode === "array") array.pop();
+  if (mode === "stack") stack.pop();
+  if (mode === "queue") queue.shift();
 
-  else if (current === "stack") stack.pop();
-
-  else if (current === "queue") queue.shift();
-
-  display();
+  save();
+  render();
 }
 
-// TREE INSERT (BST)
-function insertTree(node, val) {
-  if (!node) return new Node(val);
-
-  if (val < node.val)
-    node.left = insertTree(node.left, val);
-  else
-    node.right = insertTree(node.right, val);
-
-  return node;
-}
-
-// GRAPH
+/* GRAPH */
 function addEdge(a, b) {
   if (!graph[a]) graph[a] = [];
   if (!graph[b]) graph[b] = [];
@@ -80,51 +54,115 @@ function addEdge(a, b) {
   graph[b].push(a);
 }
 
-// DISPLAY
-function display() {
-  let output = document.getElementById("output");
-  output.innerHTML = "";
-
-  if (current === "array") draw(array);
-  if (current === "stack") draw(stack);
-  if (current === "queue") draw(queue);
-  if (current === "tree") drawTree(root, output);
-  if (current === "graph") drawGraph(output);
+/* ALGORITHMS */
+function runAlgo() {
+  if (mode === "graph") bfs();
 }
 
-// DRAW ARRAY/STACK/QUEUE
-function draw(data) {
-  let output = document.getElementById("output");
+/* BFS */
+function bfs() {
+  let visited = {};
+  let queue = [];
+  let start = Object.keys(graph)[0];
 
-  data.forEach(x => {
-    let div = document.createElement("div");
-    div.className = "box";
-    div.innerText = x;
-    output.appendChild(div);
+  queue.push(start);
+  visited[start] = true;
+
+  let log = [];
+
+  while (queue.length) {
+    let node = queue.shift();
+    log.push(node);
+
+    graph[node].forEach(n => {
+      if (!visited[n]) {
+        visited[n] = true;
+        queue.push(n);
+      }
+    });
+  }
+
+  document.getElementById("log").innerText = "BFS: " + log.join(" → ");
+}
+
+/* RENDER */
+function render() {
+  let canvas = document.getElementById("canvas");
+  canvas.innerHTML = "";
+
+  let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  canvas.appendChild(svg);
+
+  if (mode === "array") {
+    array.forEach((v, i) => drawNode(canvas, 50 + i * 60, 150, v));
+  }
+
+  if (mode === "stack") {
+    stack.forEach((v, i) => drawNode(canvas, 200, 300 - i * 60, v));
+  }
+
+  if (mode === "queue") {
+    queue.forEach((v, i) => drawNode(canvas, 50 + i * 60, 150, v));
+  }
+
+  if (mode === "graph") drawGraph(svg, canvas);
+}
+
+/* GRAPH DRAW */
+function drawGraph(svg, container) {
+  let keys = Object.keys(graph);
+  let step = (2 * Math.PI) / keys.length;
+
+  let pos = {};
+
+  keys.forEach((k, i) => {
+    pos[k] = {
+      x: 300 + 150 * Math.cos(i * step),
+      y: 200 + 150 * Math.sin(i * step)
+    };
+  });
+
+  for (let a in graph) {
+    graph[a].forEach(b => {
+      drawLine(svg, pos[a].x, pos[a].y, pos[b].x, pos[b].y);
+    });
+  }
+
+  keys.forEach(k => {
+    drawNode(container, pos[k].x, pos[k].y, k);
   });
 }
 
-// DRAW TREE
-function drawTree(node, container) {
-  if (!node) return;
-
-  let div = document.createElement("div");
-  div.className = "tree-node";
-  div.innerText = node.val;
-
-  container.appendChild(div);
-
-  if (node.left) drawTree(node.left, container);
-  if (node.right) drawTree(node.right, container);
+/* DRAW NODE */
+function drawNode(container, x, y, text) {
+  let d = document.createElement("div");
+  d.className = "node";
+  d.style.left = x + "px";
+  d.style.top = y + "px";
+  d.innerText = text;
+  container.appendChild(d);
 }
 
-// DRAW GRAPH
-function drawGraph(container) {
-  for (let key in graph) {
-    let div = document.createElement("div");
-    div.className = "node";
-    div.innerText = key;
+/* LINE */
+function drawLine(svg, x1, y1, x2, y2) {
+  let l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  l.setAttribute("x1", x1 + 20);
+  l.setAttribute("y1", y1 + 20);
+  l.setAttribute("x2", x2 + 20);
+  l.setAttribute("y2", y2 + 20);
+  l.setAttribute("stroke", "white");
+  svg.appendChild(l);
+}
 
-    container.appendChild(div);
-  }
+/* HELPERS */
+function v1Input() {
+  return document.getElementById("v1").value;
+}
+
+function v2Input() {
+  return document.getElementById("v2").value;
+}
+
+function save() {
+  localStorage.setItem("array", JSON.stringify(array));
 }
