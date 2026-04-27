@@ -1,0 +1,78 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Simulator</title>
+<style>
+body { margin:0; font-family: Arial; background:#0f172a; color:white; }
+header { padding:20px; text-align:center; background:linear-gradient(45deg,#6366f1,#06b6d4); }
+h1 { margin:0; font-size:40px; }
+.container { padding:20px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px; }
+.card { background:#1e293b; padding:20px; border-radius:15px; cursor:pointer; transition:0.3s; }
+.card:hover { transform:scale(1.05); background:#334155; }
+button { padding:10px 20px; margin:10px; border:none; border-radius:10px; cursor:pointer; background:#06b6d4; color:white; }
+#visual { margin-top:20px; min-height:200px; background:#020617; padding:20px; border-radius:10px; }
+.box { display:inline-block; padding:10px; margin:5px; background:#6366f1; border-radius:5px; }
+</style>
+</head>
+<body>
+<header>
+<h1>DATA SIMULATOR</h1>
+<p>Made by Suraj & Subham</p>
+</header><div class="container" id="home">
+<h2>Select Data Structure</h2>
+<div class="grid" id="dsList"></div>
+</div><div class="container" id="operations" style="display:none">
+<h2 id="dsTitle"></h2>
+<button onclick="chooseOp('insert')">Insert</button>
+<button onclick="chooseOp('delete')">Delete</button>
+<button onclick="chooseOp('display')">Display</button>
+</div><div class="container" id="fileOption" style="display:none">
+<h3>Choose Option</h3>
+<button onclick="newFile()">Add New</button>
+<button onclick="loadFile()">Load Saved</button>
+</div><div class="container" id="action" style="display:none">
+<input type="number" id="inputVal" placeholder="Enter value">
+<button onclick="performAction()">Submit</button>
+<div id="visual"></div>
+</div><script>
+const structures = [
+"Array","Stack","Queue","Circular Queue","Linked List","Circular Linked List","Double Linked List","Stack using Linked List","Queue using Linked List","Binary Tree","Graph"
+];
+
+let currentDS = "";
+let currentOp = "";
+let data = [];
+
+const dsList = document.getElementById("dsList");
+structures.forEach(ds => {
+let div = document.createElement("div");
+div.className="card";
+div.innerText = ds;
+div.onclick = () => selectDS(ds);
+dsList.appendChild(div);
+});
+
+function selectDS(ds){
+currentDS = ds;
+document.getElementById("home").style.display="none";
+document.getElementById("operations").style.display="block";
+document.getElementById("dsTitle").innerText = ds;
+}
+
+function chooseOp(op){
+currentOp = op;
+document.getElementById("fileOption").style.display="block";
+}
+
+function newFile(){
+data = [];
+document.getElementById("action").style.display="block";
+}
+
+function loadFile(){
+let saved = localStorage.getItem(currentDS);
+if(saved) data = JSON.parse(saved);
+render();
+document.getElementById("action").style.display="block";
